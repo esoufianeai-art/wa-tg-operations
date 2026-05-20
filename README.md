@@ -16,6 +16,17 @@
   <img src="https://img.shields.io/badge/status-Production%20Ready-brightgreen?style=for-the-badge" alt="Status">
 </p>
 
+<p align="center">
+  <code>whatsapp-validator</code> ·
+  <code>whatsapp-checker</code> ·
+  <code>telegram-validator</code> ·
+  <code>telegram-checker</code> ·
+  <code>number-verifier</code> ·
+  <code>lead-filter</code> ·
+  <code>bulk-validator</code> ·
+  <code>vcf-exporter</code>
+</p>
+
 ---
 
 ## ⚡ What Is This?
