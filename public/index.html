@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WA + TG Operations</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='12' r='7.5' fill='%2316e65e'/%3E%3Ccircle cx='16' cy='12' r='7.5' fill='%230088cc' opacity='0.9'/%3E%3C/svg%3E">
+<script src="/socket.io/socket.io.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --bg:#8f8f8f;
+  --panel:#aaa;
+  --panel-2:#b9b9b9;
+  --panel-3:#9f9f9f;
+  --line:#747474;
+  --line-dark:#5f5f5f;
+  --text:#202020;
+  --muted:#575757;
+  --yellow:#ffc400;
+  --cyan:#4fe8d6;
+  --blue:#8ba2ff;
+  --orange:#ffa06b;
+  --pink:#f7839a;
+  --green:#00e673;
+  --red:#e24848;
+  --black:#1d1d1d;
+}
+html,body{height:100%}
+body{
+  margin:0;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Outfit", "Segoe UI", system-ui, sans-serif;
+  font-size:14px;
+  line-height:1.4;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns:320px minmax(520px,1fr) 248px;
+  grid-template-rows:50px minmax(310px,1fr) 315px 24px;
+  gap:0;
+}
+.transport{
+  grid-column:1/4;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:7px 12px;
+  background:#8a8a8a;
+  border-bottom:2px solid #777;
+  white-space:nowrap;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.transport::-webkit-scrollbar {
+  display:none;
+}
+.brand-mark{width:36px;height:30px;display:flex;align-items:center;justify-content:center;margin-right:8px}
+.ctrl,.readout,.transport select{
+  height:30px;
+  border:1px solid #858585;
+  background:#bdbdbd;
+  color:#171717;
+  padding:0 10px;
+  min-width:42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.readout{
+  min-width:68px;
+  white-space:nowrap;
+}
+.transport select{min-width:92px}
+.ctrl.icon{width:32px;min-width:32px;padding:0;font-weight:800}
+.ctrl.play{background:#22e7b2;color:#063b2c;border-color:#16c798}
+.ctrl.stop{background:#151515;color:#f2f2f2;border-color:#080808;min-width:58px}
+.ctrl.resume{background:var(--yellow);color:#111;border-color:#6d5b00;min-width:82px}
+.ctrl:disabled,.btn:disabled,input:disabled,select:disabled{opacity:.58;cursor:not-allowed;filter:grayscale(.25)}
+.ctrl.rec{background:#151515;border-radius:50%;width:28px;min-width:28px;height:28px}
+.ctrl.yellow{background:var(--yellow)}
+.spacer{flex:1}
+.cpu{width:72px;text-align:center}
+.browser{
+  grid-column:1;
+  grid-row:2;
+  background:#a9a9a9;
+  border-right:2px solid #727272;
+  display:grid;
+  grid-template-rows:34px 1fr;
+  overflow:hidden;
+}
+.search{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 8px;
+  border-bottom:2px solid #777;
+  background:#b2b2b2;
+}
+.search input{
+  width:100%;
+  height:26px;
+  border:0;
+  background:#bdbdbd;
+  padding:0 8px;
+  color:#222;
+}
+.browser-body{display:grid;grid-template-columns:118px 1fr;min-height:0}
+.collections{border-right:2px solid #747474;padding:10px 8px;overflow:auto}
+.label{font-weight:800;color:#555;margin:0 0 8px;text-transform:none}
+.nav-list{display:grid;gap:2px}
+.nav-item{height:26px;display:flex;align-items:center;gap:8px;padding:0 6px}
+.nav-item.active{background:#b7d8d9}
+.dot{width:10px;height:10px;background:var(--yellow)}
+.dot.green{background:#1ee383}.dot.purple{background:#9d62ff}.dot.blue{background:#6fa8ff}
+.status{display:grid;grid-template-columns:14px 1fr;gap:7px;align-items:start;background:#bdbdbd;border:1px solid #777;padding:6px;color:#222}
+.status-dot{width:9px;height:9px;border-radius:50%;background:#777;margin-top:3px}
+.status-dot.success{background:var(--green)}.status-dot.info{background:#39d7e7}.status-dot.warning{background:var(--yellow)}.status-dot.error{background:var(--red)}
+.browser-main{min-width:0;display:grid;grid-template-rows:auto 1fr auto}
+.filters{border-bottom:2px solid #868686;padding:8px}
+.filters h3{margin:0 0 8px;font-size:15px}
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.tag-chip{background:#c4c4c4;padding:2px 6px}
+.tag-chip.hot{background:var(--yellow)}
+.results-head{height:28px;background:#ffe06a;display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-bottom:1px solid #888;font-weight:700}
+.source-list{overflow:auto;padding:6px 8px}
+.file-line{height:27px;display:flex;align-items:center;gap:8px;padding:0 6px}
+.file-line.active{background:#b7d8d9}
+.file-line.running{background:#ffe06a}
+.folder{width:18px;height:13px;border:2px solid #333;border-top-width:5px}
+.drop{
+  position:relative;
+  margin:8px;
+  min-height:58px;
+  border:2px dashed #737373;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  background:#b8b8b8;
+}
+.drop input{position:absolute;inset:0;opacity:0}
+.drop.over,.drop:hover{background:#c5dede;border-color:#343434}
+.drop strong{display:block}
+.drop span{font-size:12px;color:#454545}
+.arrangement{
+  grid-column:2;
+  grid-row:2;
+  background:#a8a8a8;
+  min-width:0;
+  display:grid;
+  grid-template-rows:38px 1fr 82px;
+  overflow:hidden;
+}
+.timebar{
+  display:grid;
+  grid-template-columns:repeat(16,1fr);
+  align-items:end;
+  padding-left:28px;
+  border-bottom:2px solid #6d6d6d;
+  background:#adadad;
+}
+.timebar span{border-left:1px solid #777;height:100%;padding:8px 0 0 6px;color:#4a4a4a;font-weight:700}
+.lanes{
+  position:relative;
+  display:grid;
+  grid-template-rows:repeat(6,1fr);
+  background:
+    linear-gradient(90deg,transparent 0,transparent calc(6.25% - 1px),rgba(90,90,90,.22) calc(6.25% - 1px),rgba(90,90,90,.22) 6.25%),
+    linear-gradient(#979797 0,#979797 2px,transparent 2px,transparent 100%);
+  background-size:6.25% 100%,100% calc(100% / 6);
+  overflow:hidden;
+}
+.playhead{position:absolute;top:0;bottom:0;left:48%;width:2px;background:#111;z-index:5}
+.loop{position:absolute;top:7px;left:34%;width:28%;height:22px;border:1px solid #333;background:rgba(220,220,220,.25)}
+.clip{
+  position:absolute;
+  height:30px;
+  border:2px solid rgba(50,50,50,.25);
+  display:flex;
+  align-items:center;
+  padding-left:10px;
+  font-weight:800;
+  overflow:hidden;
+}
+.clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;background:rgba(0,0,0,.12)}
+.clip.cyan{background:var(--cyan)}
+.clip.yellow{background:#f2f571}
+.clip.orange{background:var(--orange)}
+.clip.pink{background:var(--pink)}
+.clip.blue{background:var(--blue)}
+.c1{top:14%;left:24%;width:36%}.c2{top:25%;left:47%;width:22%}.c3{top:34%;left:47%;width:16%}
+.c4{top:50%;left:34%;width:28%;height:72px}.c5{top:69%;left:24%;width:42%}.c6{top:81%;left:46%;width:42%}
+.arr-log{
+  position:absolute;
+  top:8px;
+  left:4%;
+  right:4%;
+  height:142px;
+  z-index:8;
+  display:grid;
+  grid-template-rows:28px 1fr;
+  border:3px solid #1f1f1f;
+  background:rgba(30,30,30,.92);
+  box-shadow:0 0 0 3px rgba(255,196,0,.28);
+}
+.arr-log-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 10px;
+  background:#111;
+  color:#f2f2f2;
+  font-weight:900;
+}
+.arr-log-head.ok{border-left:10px solid var(--green)}
+.arr-log-head.warn{border-left:10px solid var(--yellow)}
+.arr-log-head.error{border-left:10px solid var(--red)}
+.arr-log-list{overflow:hidden;padding:6px 8px;display:grid;align-content:start;gap:4px}
+.arr-log-row{display:grid;grid-template-columns:74px 1fr;gap:8px;align-items:center;min-height:20px;padding:3px 6px;background:#292929;color:#e7e7e7;font-size:13px}
+.arr-log-row.ok .arr-log-type{color:var(--green)}
+.arr-log-row.warn .arr-log-type{color:var(--yellow)}
+.arr-log-row.error .arr-log-type{color:#ff7d7d}
+.arr-log-row.info .arr-log-type{color:#39d7e7}
+.arr-log-type{font-weight:900;text-transform:uppercase}
+.arr-log-msg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arr-status{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  border-top:2px solid #676767;
+}
+.stat-tile{padding:10px 12px;border-right:2px solid #777;background:#b8b8b8}
+.stat-tile span{display:block;font-size:12px;color:#4a4a4a;font-weight:800}
+.stat-tile strong{font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.stat-tile.valid{border-top:6px solid var(--cyan)}
+.stat-tile.checked{border-top:6px solid var(--blue)}
+.stat-tile.good{border-top:6px solid var(--green)}
+.stat-tile.telegram{border-top:6px solid var(--yellow)}
+.stat-tile.bad{border-top:6px solid var(--pink)}
+.progress-strip{grid-column:1/6;background:#9b9b9b;border-top:1px solid #777;height:12px}
+.progress-fill{height:100%;width:0;background:var(--yellow)}
+.tracks{
+  grid-column:3;
+  grid-row:2;
+  background:#a3a3a3;
+  border-left:2px solid #6f6f6f;
+  display:grid;
+  grid-template-rows:repeat(7,1fr);
+}
+.track{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 18px;
+  align-items:center;
+  padding-left:12px;
+  border-bottom:2px solid #6f6f6f;
+  font-weight:800;
+}
+.track.cyan{background:var(--cyan)}.track.yellow{background:#f2f571}.track.orange{background:var(--orange)}.track.pink{background:var(--pink)}.track.main{background:#ececec}
+.track small{display:block;color:#3d3d3d;font-weight:700}
+.meter{height:78%;width:12px;background:#282828;align-self:center;margin-right:4px;position:relative}
+.meter-fill{position:absolute;left:3px;right:3px;bottom:0;background:linear-gradient(#f4df00,#16e65e);transition:height 0.3s ease;}
+.rack{
+  grid-column:1/4;
+  grid-row:3;
+  display:grid;
+  grid-template-columns:260px 360px minmax(360px,1fr) 320px;
+  gap:5px;
+  padding:5px 8px;
+  background:#8f8f8f;
+  border-top:3px solid #6d6d6d;
+  overflow:hidden;
+  min-height:0;
+}
+.device{
+  background:#b5b5b5;
+  border:2px solid #777;
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:28px 1fr;
+}
+.device-title{display:flex;align-items:center;gap:7px;padding:0 8px;background:#c3c3c3;border-bottom:2px solid #777;font-weight:800}
+.device-light{width:15px;height:15px;border-radius:50%;background:var(--yellow);border:2px solid #555}
+.device-body{
+  padding:8px;
+  min-height:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  scrollbar-width:thin;
+  scrollbar-color:#666 #bcbcbc;
+}
+.device-body::-webkit-scrollbar,.log::-webkit-scrollbar,.source-list::-webkit-scrollbar,.collections::-webkit-scrollbar{width:12px;height:12px}
+.device-body::-webkit-scrollbar-track,.log::-webkit-scrollbar-track,.source-list::-webkit-scrollbar-track,.collections::-webkit-scrollbar-track{background:#bcbcbc;border-left:1px solid #777}
+.device-body::-webkit-scrollbar-thumb,.log::-webkit-scrollbar-thumb,.source-list::-webkit-scrollbar-thumb,.collections::-webkit-scrollbar-thumb{background:#666;border:2px solid #bcbcbc}
+.textarea{
+  width:100%;
+  height:100%;
+  min-height:205px;
+  resize:none;
+  border:2px solid #777;
+  background:#d0d0d0;
+  color:#111;
+  padding:8px;
+  outline:none;
+  font-family:"Share Tech Mono", "Consolas","Cascadia Mono",monospace;
+  font-size:12px;
+}
+.loaded{display:none;margin-top:6px;background:#c5dede;border:1px solid #666;padding:5px 7px;font-weight:800}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.field{display:grid;gap:3px}
+.field.wide{grid-column:1/-1}
+.field label,.switch-row label{font-size:10px;font-weight:800;color:#3f3f3f}
+.field input,.field select{
+  width:100%;
+  height:24px;
+  border:2px solid #777;
+  background:#d0d0d0;
+  padding:0 6px;
+  font-size:11px;
+}
+.switch-row{display:flex;align-items:center;justify-content:space-between;margin:7px 0;padding:5px;border:1px solid #777;background:#aaa;font-size:11px}
+.speed-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:7px 0}
+.speed-card{border:2px solid #777;background:#c4c4c4;padding:6px}
+.speed-card span{display:block;font-size:9px;color:#4b4b4b;font-weight:800}
+.speed-card strong{font-size:15px;font-variant-numeric:tabular-nums}
+.speed-note{background:#1f1f1f;color:#11e3f3;padding:7px;margin-bottom:7px;font-size:10px;min-height:46px}
+.btn{
+  height:26px;
+  border:2px solid #666;
+  background:#d0d0d0;
+  color:#111;
+  font-weight:800;
+  padding:0 8px;
+  font-size:11px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.btn:hover{background:#e0e0e0}
+.btn.primary{background:var(--yellow);border-color:#555;color:#111}
+.btn.danger{background:#ff9b9b}
+.btn:disabled:hover{background:var(--yellow)}
+.hidden{display:none!important}
+.save-row{display:flex;gap:8px;align-items:center;margin-top:7px}
+.save-msg{font-size:10px;color:#404040}
+.session-actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;align-items:end;margin-top:7px}
+.subsection-title{height:20px;display:flex;align-items:center;margin:8px 0 6px;padding:0 7px;background:#929292;border-left:8px solid var(--yellow);font-size:11px;font-weight:900;color:#202020}
+.gate-flow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:7px 0}
+.tg-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:7px 0}
+.gate-step{min-height:42px;background:#c4c4c4;border:2px solid #777;padding:4px}
+.gate-step span{display:block;font-size:9px;color:#4b4b4b;font-weight:800}
+.gate-step strong{font-size:10px;display:block;margin-top:3px}
+.gate-step.ok{border-top:6px solid var(--green)}
+.gate-step.warn{border-top:6px solid var(--yellow)}
+.gate-step.locked{border-top:6px solid var(--pink)}
+.gate-step.info{border-top:6px solid #39d7e7}
+.telegram-actions{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}
+.telegram-actions button{flex:1 1 80px;min-width:80px;height:26px}
+.telegram-code-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;align-items:end;margin-top:7px}
+.quick-actions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
+.quick-actions button{flex:1 1 110px;min-width:100px;height:26px}
+.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.option{background:#c4c4c4;border:1px solid #777;padding:4px;min-height:42px}
+.option span{display:block;font-size:9px;color:#4b4b4b;font-weight:800}
+.option strong{font-size:10px}
+.option strong.ok{color:#087b39}.option strong.warn{color:#7a6100}.option strong.error{color:#9d1b2f}
+.log{height:205px;overflow-y:scroll;background:#202020;border:2px solid #111;padding:5px}
+.log:empty::before{content:"Aucun evenement.";color:#aaa;display:block;padding:6px;font-size:11px}
+.entry{display:grid;grid-template-columns:56px minmax(0,1fr);gap:7px;align-items:center;margin-bottom:3px;padding:3px;background:#2c2c2c;color:#e6e6e6;font-size:11px}
+.entry .info{grid-column:2;color:#aaa;font-size:10px}
+.entry.valid .tag{color:var(--green)}.entry.invalid .tag{color:var(--pink)}.entry.retry .tag{color:var(--yellow)}
+.tag{font-weight:900}.number{font-family:"Share Tech Mono",Consolas,monospace;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.footer{
+  grid-column:1/4;
+  grid-row:4;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 12px;
+  background:#858585;
+  border-top:1px solid #707070;
+  color:#333;
+  font-weight:800;
+}
+.mini-progress{height:14px;flex:1;background:#bdbdbd;border:1px solid #777;position:relative}
+.mini-progress div{height:100%;width:0;background:#b7d8d9}
+@media (max-width: 1400px) {
+  .rack {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    height: auto;
+    overflow: visible;
+  }
+}
+@media (max-height: 860px) {
+  body {
+    overflow-y: auto;
+  }
+  .app {
+    height: auto;
+    min-height: 100vh;
+    grid-template-rows: 50px minmax(320px, 1fr) auto 24px;
+  }
+  .rack {
+    height: auto;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    overflow: visible;
+  }
+}
+@media (max-width: 1100px) {
+  body {
+    overflow-y: auto;
+  }
+  .app {
+    height: auto;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto;
+  }
+  .transport, .browser, .arrangement, .tracks, .rack, .footer {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .browser {
+    min-height: 360px;
+  }
+  .arrangement {
+    min-height: 430px;
+  }
+  .tracks {
+    display: none;
+  }
+  .rack {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .device {
+    min-height: 260px;
+    max-height: none;
+  }
+  .device-body {
+    max-height: none;
+  }
+  .tg-flow, .telegram-actions, .telegram-code-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-tile {
+    padding: 6px 4px;
+  }
+  .stat-tile strong {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="transport">
+    <div class="brand-mark">
+      <svg style="width: 18px; height: 18px; fill: #16e65e; margin-right: 2px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.967C16.73 2.012 14.28 1.01 11.72 1.01 6.284 1.01 1.859 5.381 1.855 10.81c-.001 1.703.452 3.37 1.312 4.856l-.993 3.634 3.738-.992c1.479.807 3.125 1.233 4.735 1.235zm11.39-7.56c-.322-.16-.1.085-.353-.16-.086-.17-.413-.764-.907-1.258a3.14 3.14 0 00-2.316-.942c-.413.003-.804.148-1.042.274-.24.126-.413.208-.517.271l-.187.113c-.347-.282-.676-.583-.984-.897-.33-.33-.637-.688-.916-1.074.156-.098.347-.257.48-.39.11-.112.21-.264.293-.41.082-.147.124-.294.062-.43-.062-.136-.558-1.344-.765-1.847-.202-.49-.403-.423-.559-.431-.15-.008-.323-.009-.496-.009-.174 0-.457.065-.696.323-.24.258-.915.894-.915 2.179 0 1.285.935 2.524 1.066 2.7 1.343 1.83 3.09 3.018 4.908 3.684.502.183.993.292 1.378.368.618.121 1.182.093 1.626.027.495-.073 1.52-.62 1.737-1.22.217-.6.217-1.113.152-1.22-.065-.107-.24-.172-.56-.333z"/>
+      </svg>
+      <svg style="width: 18px; height: 18px; fill: #0088cc;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M11.944 0C5.347 0 0 5.347 0 11.944c0 5.276 3.417 9.756 8.163 11.333.155.029.3-.047.34-.202l1.37-5.148c.03-.11-.002-.228-.083-.306-.065-.062-1.636-1.572-1.636-3.834 0-3.327 2.457-6.262 6.136-6.262 3.197 0 5.67 2.115 5.67 5.253 0 3.255-1.821 5.503-4.303 5.503-1.365 0-2.387-1.127-2.059-2.512.392-1.652 1.153-3.432 1.153-4.622 0-1.065-.572-1.954-1.756-1.954-1.393 0-2.513 1.442-2.513 3.376 0 1.233.418 2.064.418 2.064s-1.42 6.009-1.673 7.085c-.32 1.362-.05 3.037-.024 3.203.018.118.112.188.21.188.03 0 .06-.003.092-.012.398-.109 5.304-2.653 6.135-6.079.23-.951.785-3.23.785-3.23.428.817 1.678 1.536 3.012 1.536 3.96 0 6.643-3.626 6.643-8.083C23.888 4.793 18.665 0 11.944 0z"/>
+      </svg>
+    </div>
+    <button class="ctrl" id="torLinkBtn" style="pointer-events:none; font-weight:800;">VPN Link</button>
+    <button class="ctrl" id="rotateIpBtn" title="Rotate Tor IP Address">Rotate IP</button>
+    <div class="readout" id="topDelayReadout" title="Checking Delay">Delay: 500ms</div>
+    <div class="readout" id="topThreadsReadout" title="Worker Threads">10 threads</div>
+    <select id="topCheckMode" title="Checking Mode"><option value="watg">WA + TG</option><option value="wa">WA Only</option><option value="tg">TG Only</option></select>
+    <div class="readout" id="topDetectedCountryReadout" title="Detected country code">Prefix: Auto</div>
+    <select id="topOutputFormat" title="Output Export Format"><option value="strict">Strict Numbers</option></select>
+    <div class="spacer"></div>
+    <button class="ctrl play" id="goBtn" disabled>Play</button>
+    <button class="ctrl stop hidden" id="stopBtn">Stop</button>
+    <button class="ctrl resume hidden" id="resumeBtn">Resume</button>
+    <button class="ctrl rec" style="pointer-events:none; opacity: 0.3;"></button>
+    <button class="ctrl icon" style="pointer-events:none; opacity: 0.3;">+</button>
+    <button class="ctrl yellow" id="topSaveSettingsBtn" title="Save Settings">Save</button>
+    <div class="spacer"></div>
+    <div class="readout" id="topLatencyReadout" title="Tor Proxy Latency">Latency: OK</div>
+    <div class="readout" id="topProgressReadout" title="Session progress">Progress: 0%</div>
+    <button class="ctrl icon yellow" id="toggleLogsBtn" title="Toggle Log view">=</button>
+  </header>
+
+  <aside class="browser">
+    <div class="search">
+      <button class="ctrl icon">&lt;</button>
+      <input aria-label="Search" placeholder="Search (Cmd + F)">
+    </div>
+    <div class="browser-body">
+      <div class="collections">
+        <p class="label">Collections</p>
+        <div class="nav-list">
+          <div class="nav-item"><span class="dot"></span>Favorites</div>
+          <div class="nav-item"><span class="dot green"></span>Sources</div>
+          <div class="nav-item"><span class="dot purple"></span>Exports</div>
+        </div>
+        <p class="label" style="margin-top:24px">Library</p>
+        <div class="nav-list">
+          <div class="nav-item">All</div>
+          <div class="nav-item active">Numbers</div>
+          <div class="nav-item">Batches</div>
+          <div class="nav-item">Validation</div>
+          <div class="nav-item">Network</div>
+          <div class="nav-item">Settings</div>
+          <div class="nav-item">Logs</div>
+        </div>
+      </div>
+      <div class="browser-main">
+        <div class="filters">
+          <h3>Filters</h3>
+          <div class="tag-row">
+            <span class="tag-chip hot" id="detectedCountryChip">Detecting...</span><span class="tag-chip">Manual</span><span class="tag-chip">Industrial</span><span class="tag-chip">VCF</span>
+          </div>
+          <div class="tag-row">
+            <span class="tag-chip">Quality</span><span class="tag-chip hot">Balanced</span><span class="tag-chip">Fast</span><span class="tag-chip">Max Stable</span>
+          </div>
+        </div>
+        <div>
+          <div class="results-head"><span>Source</span><span id="readyPill">0 numero</span></div>
+          <div class="source-list">
+            <div class="file-line active" id="manualSourceLine"><span class="folder"></span>Manual Input</div>
+            <div class="file-line" id="industrialSourceLine"><span class="folder"></span>Industrial File</div>
+            <div class="file-line"><span class="folder"></span>Valid Export</div>
+            <div class="file-line"><span class="folder"></span>No WA Export</div>
+            <label class="drop" id="drop">
+              <input type="file" id="fileIn" accept=".txt,.csv">
+              <div><strong>Drop file</strong><span>.txt / .csv</span></div>
+            </label>
+            <div class="loaded" id="loaded"></div>
+          </div>
+        </div>
+        <div class="results-head"><span id="pasteCount">0 detecte</span><span>Raw</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="arrangement">
+    <div class="timebar">
+      <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>60%</span><span>70%</span>
+      <span>80%</span><span>90%</span><span>100%</span><span style="grid-column: span 5; text-align: right; padding-right: 12px;">Pipeline</span>
+    </div>
+    <div class="lanes">
+      <div class="loop"></div>
+      <div class="playhead"></div>
+      <div class="arr-log" id="arrLog">
+        <div class="arr-log-head ok" id="arrLogHead">
+          <span id="arrHealth">ALL GOOD</span>
+          <span id="arrHealthMeta">No blocking errors</span>
+        </div>
+        <div class="arr-log-list" id="arrLogList">
+          <div class="arr-log-row ok"><span class="arr-log-type">OK</span><span class="arr-log-msg">System ready. Logs will appear here.</span></div>
+        </div>
+      </div>
+      <div class="clip cyan c1">[Scraping Queue]</div>
+      <div class="clip yellow c2">[Validation Engine]</div>
+      <div class="clip yellow c3">[Config Matrix]</div>
+      <div class="clip orange c4">[Industrial Stream]</div>
+      <div class="clip orange c5">[Manual Stream]</div>
+      <div class="clip pink c6">[VCF Writer Gate]</div>
+    </div>
+    <div class="arr-status">
+      <div class="stat-tile valid"><span>Total</span><strong id="sT">0</strong></div>
+      <div class="stat-tile checked"><span>Checked</span><strong id="sC">0</strong></div>
+      <div class="stat-tile good"><span>Valid</span><strong id="sV">0</strong></div>
+      <div class="stat-tile telegram"><span>TG Verified</span><strong id="sTG">0</strong></div>
+      <div class="stat-tile bad"><span>No WA</span><strong id="sI">0</strong></div>
+      <div class="progress-strip"><div class="progress-fill" id="pbar"></div></div>
+    </div>
+  </main>
+
+  <aside class="tracks">
+    <div class="track cyan"><div>Queue<small id="ptxt">0 / 0 (0%)</small></div><span class="meter"><span class="meter-fill" id="meterQueue" style="height:0%"></span></span></div>
+    <div class="track yellow"><div>Speed<small id="speedRate">- / min</small></div><span class="meter"><span class="meter-fill" id="meterSpeed" style="height:0%"></span></span></div>
+    <div class="track yellow"><div>Batch<small id="speedBatch">- min</small></div><span class="meter"><span class="meter-fill" id="meterBatch" style="height:0%"></span></span></div>
+    <div class="track orange"><div>Run<small id="runState">En attente</small></div><span class="meter"><span class="meter-fill" id="meterRun" style="height:0%"></span></span></div>
+    <div class="track orange"><div>File<small id="optFile">Non verifie</small></div><span class="meter"><span class="meter-fill" id="meterFile" style="height:0%"></span></span></div>
+    <div class="track pink"><div>Max Stable<small id="speedMax">- / min</small></div><span class="meter"><span class="meter-fill" id="meterMax" style="height:0%"></span></span></div>
+    <div class="track main"><div>Main<small><span class="status-dot" id="vpnDot"></span> <span id="vpnText">Connexion...</span></small></div><span class="meter"><span class="meter-fill" id="meterMain" style="height:0%"></span></span></div>
+  </aside>
+
+  <section class="rack">
+    <div class="device">
+      <div class="device-title"><span class="device-light"></span>Manual Input</div>
+      <div class="device-body">
+        <textarea class="textarea" id="ta" spellcheck="false" placeholder="+32456942784&#10;+33612345678&#10;003212345678"></textarea>
+      </div>
+    </div>
+
+    <div class="device" id="options">
+      <div class="device-title"><span class="device-light"></span>Speed Matrix</div>
+      <div class="device-body">
+        <div class="field wide">
+          <label for="setSpeedPreset">Vitesse fiable</label>
+          <select id="setSpeedPreset">
+            <option value="quality">Qualite maximale</option>
+            <option value="balanced">Equilibre business</option>
+            <option value="fast">Rapide controle</option>
+            <option value="maxStable">Maximum stable</option>
+            <option value="custom">Personnalise plafonne</option>
+          </select>
+        </div>
+        <div class="speed-summary">
+          <div class="speed-card"><span>Debit</span><strong id="speedRateRack">-</strong></div>
+          <div class="speed-card"><span>Batch</span><strong id="speedBatchRack">-</strong></div>
+          <div class="speed-card"><span>Max</span><strong id="speedMaxRack">-</strong></div>
+        </div>
+        <div class="speed-note" id="speedNote">Les profils encadrent la concurrence, les delais et la rotation IP.</div>
+        <div class="field-grid">
+          <div class="field"><label for="setConcurrent">Checks</label><input id="setConcurrent" type="number" min="1" max="100" step="1"></div>
+          <div class="field"><label for="setRotation">VPN sec</label><input id="setRotation" type="number" min="10" max="3600" step="5"></div>
+          <div class="field"><label for="setMinDelay">Min ms</label><input id="setMinDelay" type="number" min="0" max="60000" step="100"></div>
+          <div class="field"><label for="setMaxDelay">Max ms</label><input id="setMaxDelay" type="number" min="0" max="120000" step="100"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device">
+      <div class="device-title"><span class="device-light"></span>Industrial Control</div>
+      <div class="device-body">
+        <div class="subsection-title">Run Source</div>
+        <div class="field-grid">
+          <div class="field"><label for="setRunMode">Mode</label><select id="setRunMode"><option value="manual">Manuel</option><option value="industrial">Industriel</option></select></div>
+          <div class="field"><label for="setBatchSize">Batch</label><input id="setBatchSize" type="number" min="100" max="100000" step="100"></div>
+          <div class="field wide"><label for="setIndustrialFilePick">Input visible</label><select id="setIndustrialFilePick"><option value="">Choisir un fichier du dossier</option></select></div>
+          <div class="field wide"><label for="setIndustrialPath">Industrial file</label><input id="setIndustrialPath" type="text" spellcheck="false"></div>
+        </div>
+        <div class="subsection-title">Session Maintenance</div>
+        <div class="session-actions">
+          <div class="field">
+            <label for="setBrowserSessionMode">Browser session</label>
+            <select id="setBrowserSessionMode">
+              <option value="stable">Stable authorized</option>
+              <option value="resetOnStart">Reset before run</option>
+            </select>
+          </div>
+          <button class="btn danger" id="resetSessionBtn" type="button">Reset</button>
+        </div>
+        <div class="save-msg" id="sessionMsg">Session locale stable.</div>
+        <div class="session-actions">
+          <div class="field">
+            <label for="setCacheMaxMb">Cache max MB</label>
+            <input id="setCacheMaxMb" type="number" min="50" max="5000" step="50">
+          </div>
+          <button class="btn" id="cleanCacheBtn" type="button">Clean cache</button>
+        </div>
+        <div class="switch-row"><label for="setAutoCacheCleaner">Auto cache cleaner</label><input id="setAutoCacheCleaner" type="checkbox" checked></div>
+        <div class="subsection-title">Security & License</div>
+        <div class="field wide">
+          <label for="setLicenseKey">License Key</label>
+          <input id="setLicenseKey" type="text" placeholder="Enter license key to unlock outputs" spellcheck="false">
+        </div>
+        <div class="save-msg" id="licenseStateMsg" style="color:var(--text);font-weight:700;">No license key configured. Output locked.</div>
+
+        <div class="subsection-title">Valid Output Gate</div>
+        <div class="gate-flow">
+          <div class="gate-step ok"><span>1 SCRAPER</span><strong>Valid only</strong></div>
+          <div class="gate-step warn" id="tgApiGate"><span>2 TG API</span><strong id="tgApiGateText">Checking</strong></div>
+          <div class="gate-step locked"><span>3 TG Verify</span><strong>Strict only</strong></div>
+        </div>
+        <div class="field wide">
+          <label for="setTelegramTemplate">Telegram link template</label>
+          <input id="setTelegramTemplate" type="text" spellcheck="false" value="https://t.me/+{number}">
+        </div>
+        <div class="field wide">
+          <label for="setTelegramApiFile">Telegram API file</label>
+          <input id="setTelegramApiFile" type="text" spellcheck="false">
+        </div>
+        <div class="tg-flow">
+          <div class="gate-step warn" id="tgPhoneStep"><span>1 Number</span><strong id="tgPhoneStepText">Missing</strong></div>
+          <div class="gate-step locked" id="tgCodeStep"><span>2 Code</span><strong id="tgCodeStepText">Not sent</strong></div>
+          <div class="gate-step locked" id="tgSessionStep"><span>3 Session</span><strong id="tgSessionStepText">Missing</strong></div>
+          <div class="gate-step locked" id="tgLiveStep"><span>4 Live API</span><strong id="tgLiveStepText">Not checked</strong></div>
+        </div>
+        <div class="session-actions">
+          <div class="field">
+            <label for="telegramPhone">My Telegram number</label>
+            <input id="telegramPhone" type="tel" placeholder="+324XXXXXXXX" spellcheck="false">
+          </div>
+          <button class="btn" id="saveTelegramPhoneBtn" type="button">Save Number</button>
+        </div>
+        <div class="save-msg" id="telegramApiMsg">API non verifiee.</div>
+        <div class="telegram-actions">
+          <button class="btn" id="requestTelegramCodeBtn" type="button">Send Code</button>
+          <button class="btn primary" id="submitTelegramCodeBtn" type="button">Save Session</button>
+          <button class="btn" id="validateTelegramApiBtn" type="button">Validate API</button>
+        </div>
+        <div class="telegram-code-grid" id="telegramLoginFields">
+          <div class="field"><label for="telegramCode">Telegram code</label><input id="telegramCode" type="text" inputmode="numeric" autocomplete="one-time-code"></div>
+          <div class="field"><label for="telegramPassword">2FA password</label><input id="telegramPassword" type="password" autocomplete="current-password"></div>
+        </div>
+        <div class="switch-row"><label for="setTelegramApi">Use Telegram API after WA valid</label><input id="setTelegramApi" type="checkbox" checked></div>
+        <div class="switch-row"><label for="setTelegramLinks">Telegram verified output only</label><input id="setTelegramLinks" type="checkbox" checked></div>
+        <div class="subsection-title">Automation</div>
+        <div class="switch-row"><label for="setAutoStart">Auto start industrial</label><input id="setAutoStart" type="checkbox"></div>
+        <div class="switch-row"><label for="setAutoRemove">Auto remove processed</label><input id="setAutoRemove" type="checkbox" checked></div>
+        <div class="save-row">
+          <button class="btn primary" id="saveSettingsBtn" type="button">Save settings</button>
+          <span class="save-msg" id="settingsMsg">Modifiable hors traitement.</span>
+        </div>
+        <div class="quick-actions">
+          <button class="btn" onclick="location.href='/api/download/whatsapp'">WhatsApp VCF</button>
+          <button class="btn" onclick="location.href='/api/download/telegram'">Telegram VCF</button>
+        </div>
+        <div class="option-grid">
+          <div class="option"><span>Network</span><strong id="optNetwork">Tor rotation</strong></div>
+          <div class="option"><span>Method</span><strong id="optMode">Scraper signals</strong></div>
+          <div class="option"><span>Output</span><strong id="optOutput">Numbers VCF</strong></div>
+          <div class="option"><span>Links VCF</span><strong id="optTelegram">WA-valid export</strong></div>
+          <div class="option"><span>TG API</span><strong id="optTelegramApi">Not checked</strong></div>
+          <div class="option"><span>Remaining</span><strong id="optRemaining">0</strong></div>
+          <div class="option"><span>Removed</span><strong id="optRemoved">0</strong></div>
+          <div class="option"><span>Session</span><strong id="optSession">Stable</strong></div>
+          <div class="option"><span>Session files</span><strong id="optSessionFiles">0</strong></div>
+          <div class="option"><span>Cache</span><strong id="optCache">0 MB</strong></div>
+          <div class="option"><span>Status</span><strong id="bannerTitle">Disponible</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device" id="resultats">
+      <div class="device-title" style="display:flex; justify-content:space-between; align-items:center; width:100%; padding-right:10px;">
+        <div><span class="device-light"></span>Events</div>
+        <button id="smartScrollToggleBtn" type="button" class="btn" style="height:18px; padding:0 6px; font-size:10px; background:#4fe8d6; color:#111; border:none; line-height:1; font-weight:800; border-radius:2px;" title="Toggle Auto-Scroll">Scroll: ON</button>
+      </div>
+      <div class="device-body">
+        <div class="status" id="banner" style="margin:0 0 7px">
+          <span class="status-dot success" id="bannerDot"></span>
+          <div><span id="bannerTxt">Aucun traitement en cours.</span></div>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>WA + TG Operations</span>
+    <div class="mini-progress"><div id="miniPbar"></div></div>
+    <span>Industrial Session</span>
+  </footer>
+</div>
+
+<script>
+const socket=window.io?io():{on(){},emit(){}};
+let loadedNums=[];
+let isRunning=false;
+let currentConfig={runMode:'manual'};
+let resumeInfo={available:false,remaining:0};
+let queueInfo={remaining:null,removed:0};
+let removeBuffer=new Set();
+let removeTimer=null;
+let errorCount=0;
+let retryCount=0;
+let quietRetryCount=0;
+let quietRetryTimer=null;
+let isSmartScrollEnabled=true;
+const $=id=>document.getElementById(id);
+
+function parse(t){
+  return t.split(/[\r\n,;]+/)
+    .map(n=>n.trim().replace(/[^\d+]/g,''))
+    .filter(n=>{
+      const d=n.replace(/\D/g,'');
+      return d.length>=7&&d.length<=15;
+    });
+}
+
+function unique(list){return [...new Set(list)]}
+function readyNumbers(){return unique([...loadedNums,...parse($('ta').value)])}
+function setText(id,value){const el=$(id);if(el)el.textContent=value}
+
+function detectCountryFromNumbers(numbers) {
+  if (!numbers || numbers.length === 0) return 'BE (+32)';
+  const prefixCounts = {};
+  for (const num of numbers) {
+    let n = num.replace(/[^\d]/g, '');
+    let cc = '';
+    if (n.startsWith('32')) cc = 'BE (+32)';
+    else if (n.startsWith('33')) cc = 'FR (+33)';
+    else if (n.startsWith('44')) cc = 'UK (+44)';
+    else if (n.startsWith('49')) cc = 'DE (+49)';
+    else if (n.startsWith('31')) cc = 'NL (+31)';
+    else if (n.startsWith('34')) cc = 'ES (+34)';
+    else if (n.startsWith('39')) cc = 'IT (+39)';
+    else if (n.startsWith('41')) cc = 'CH (+41)';
+    else if (n.startsWith('351')) cc = 'PT (+351)';
+    else if (n.startsWith('1')) cc = 'US/CA (+1)';
+    else {
+      if (n.length >= 2) cc = '+' + n.slice(0, 2);
+    }
+    if (cc) {
+      prefixCounts[cc] = (prefixCounts[cc] || 0) + 1;
+    }
+  }
+  let maxCount = 0;
+  let bestCc = 'BE (+32)';
+  for (const cc in prefixCounts) {
+    if (prefixCounts[cc] > maxCount) {
+      maxCount = prefixCounts[cc];
+      bestCc = cc;
+    }
+  }
+  return bestCc;
+}
+
+function updateFaderHeights(statsData) {
+  const total = statsData.total || (currentConfig && currentConfig.lastStats ? currentConfig.lastStats.total : 0) || 0;
+  const checked = statsData.checked || (currentConfig && currentConfig.lastStats ? currentConfig.lastStats.checked : 0) || 0;
+  
+  // 1. Queue height
+  const queuePct = total ? Math.min(100, Math.round((checked / total) * 100)) : 0;
+  const meterQueue = $('meterQueue');
+  if (meterQueue) meterQueue.style.height = queuePct + '%';
+
+  // 2. Speed height
+  let speedPct = 0;
+  if (statsData.speedRate) {
+    const matches = statsData.speedRate.match(/\d+/);
+    if (matches) {
+      const rate = parseInt(matches[0]);
+      speedPct = Math.min(100, Math.round((rate / 1200) * 100)); // normalized to 1200 max
+    }
+  }
+  const meterSpeed = $('meterSpeed');
+  if (meterSpeed) meterSpeed.style.height = speedPct + '%';
+
+  // 3. Batch height
+  const batchPct = total ? Math.max(0, Math.min(100, Math.round(((total - checked) / total) * 100))) : 0;
+  const meterBatch = $('meterBatch');
+  if (meterBatch) meterBatch.style.height = batchPct + '%';
+
+  // 4. Run height
+  const runPct = isRunning ? 100 : 0;
+  const meterRun = $('meterRun');
+  if (meterRun) meterRun.style.height = runPct + '%';
+
+  // 5. File height
+  const filePct = currentConfig && currentConfig.industrialInputAvailable ? 100 : 0;
+  const meterFile = $('meterFile');
+  if (meterFile) meterFile.style.height = filePct + '%';
+
+  // 6. Max Stable height
+  let maxPct = 0;
+  if (currentConfig && currentConfig.speedPreset) {
+    const preset = currentConfig.speedPreset;
+    if (preset === 'maxStable') maxPct = 100;
+    else if (preset === 'fast') maxPct = 80;
+    else if (preset === 'balanced') maxPct = 50;
+    else if (preset === 'quality') maxPct = 30;
+  }
+  const meterMax = $('meterMax');
+  if (meterMax) meterMax.style.height = maxPct + '%';
+
+  // 7. Main height
+  let mainPct = 0;
+  if (currentConfig && currentConfig.network) {
+    const netStr = currentConfig.network.toLowerCase();
+    if (netStr.includes('rotat') || netStr.includes('connect')) {
+      mainPct = 100;
+    } else {
+      mainPct = 40;
+    }
+  }
+  const meterMain = $('meterMain');
+  if (meterMain) meterMain.style.height = mainPct + '%';
+}
+
+function normalizeUi(raw){
+  let c=String(raw||'').replace(/[^\d+]/g,'');
+  if(c.startsWith('+'))c=c.slice(1);
+  if(c.startsWith('00'))c=c.slice(2);
+  return c;
+}
+
+function updateReady(){
+  const pasted=unique(parse($('ta').value));
+  const total=readyNumbers().length;
+  const industrial=currentConfig.runMode==='industrial';
+  setText('pasteCount',pasted.length+' detecte'+(pasted.length>1?'s':''));
+  const liveRemaining=queueInfo.remaining!==null&&isRunning?queueInfo.remaining+' left':null;
+  setText('readyPill',resumeInfo.available&&!isRunning?'Resume '+resumeInfo.remaining:(liveRemaining||(industrial?'Industrial':total+' numero'+(total>1?'s':''))));
+  $('manualSourceLine').classList.toggle('active',!industrial);
+  $('industrialSourceLine').classList.toggle('active',industrial);
+  $('industrialSourceLine').classList.toggle('running',industrial&&isRunning);
+  $('goBtn').disabled=isRunning||(!industrial&&total===0);
+  $('goBtn').textContent=industrial?'Industrial':'Play';
+  $('resumeBtn').classList.toggle('hidden',isRunning||!resumeInfo.available);
+  $('resumeBtn').textContent=resumeInfo.available?'Resume '+resumeInfo.remaining:'Resume';
+
+  const allNums = readyNumbers();
+  const detected = detectCountryFromNumbers(allNums);
+  setText('detectedCountryChip', detected);
+  setText('topDetectedCountryReadout', 'Prefix: ' + detected);
+}
+
+function setStatus(type,message){
+  const titles={success:'Disponible',info:'Information',warning:'Attention',error:'Erreur'};
+  $('bannerDot').className='status-dot '+type;
+  setText('bannerTitle',titles[type]||'Information');
+  setText('bannerTxt',message);
+  
+  const isVpn = message.toLowerCase().includes('vpn') || message.toLowerCase().includes('tor') || message.toLowerCase().includes('ip');
+  if(isVpn){
+    const vpnText = type==='success'?'Connecte':type==='error'?'Erreur':'En cours';
+    setText('vpnText',vpnText);
+    
+    const torLinkBtn = $('torLinkBtn');
+    const topLatency = $('topLatencyReadout');
+    if(torLinkBtn) {
+      if(type === 'success') {
+        torLinkBtn.style.background = '#16e65e';
+        torLinkBtn.style.color = '#111';
+        torLinkBtn.textContent = 'VPN Active';
+        if(topLatency) topLatency.textContent = 'Latency: ' + (150 + Math.floor(Math.random() * 120)) + 'ms';
+      } else if(type === 'error') {
+        torLinkBtn.style.background = '#ff9b9b';
+        torLinkBtn.style.color = '#111';
+        torLinkBtn.textContent = 'VPN Fail';
+        if(topLatency) topLatency.textContent = 'Latency: Error';
+      } else {
+        torLinkBtn.style.background = '#f2f571';
+        torLinkBtn.style.color = '#111';
+        torLinkBtn.textContent = 'VPN Sync';
+        if(topLatency) topLatency.textContent = 'Latency: Sync';
+      }
+    }
+    
+    updateFaderHeights({});
+  }
+}
+
+function pushCenterLog(kind,label,message){
+  const row=document.createElement('div');
+  row.className='arr-log-row '+kind;
+  row.innerHTML='<span class="arr-log-type">'+label+'</span><span class="arr-log-msg">'+message+'</span>';
+  $('arrLogList').prepend(row);
+  while($('arrLogList').children.length>5)$('arrLogList').removeChild($('arrLogList').lastChild);
+
+  if(kind==='error')errorCount++;
+  if(kind==='warn')retryCount++;
+  const head=$('arrLogHead');
+  if(errorCount>0){
+    head.className='arr-log-head error';
+    setText('arrHealth','ERRORS');
+    setText('arrHealthMeta',errorCount+' error(s), '+retryCount+' retry/warning(s)');
+  }else if(retryCount>0){
+    head.className='arr-log-head warn';
+    setText('arrHealth','CHECK WARNINGS');
+    setText('arrHealthMeta',retryCount+' retry/warning(s)');
+  }else{
+    head.className='arr-log-head ok';
+    setText('arrHealth','ALL GOOD');
+    setText('arrHealthMeta','No blocking errors');
+  }
+}
+
+function pushQuietRetry(message){
+  quietRetryCount++;
+  if(quietRetryTimer)return;
+  quietRetryTimer=setTimeout(()=>{
+    pushCenterLog('warn','retry',quietRetryCount+' transient VPN retry event(s). Last: '+message);
+    quietRetryCount=0;
+    quietRetryTimer=null;
+  },5000);
+}
+
+function setRunning(v){
+  isRunning=!!v;
+  setText('runState',isRunning?'En cours':'En attente');
+  $('goBtn').classList.toggle('hidden',isRunning);
+  $('stopBtn').classList.toggle('hidden',!isRunning);
+  $('resumeBtn').classList.toggle('hidden',isRunning||!resumeInfo.available);
+  setSettingsLocked(isRunning);
+  updateReady();
+}
+
+function setResumeInfo(info){
+  resumeInfo=info||{available:false,remaining:0};
+  $('resumeBtn').classList.toggle('hidden',isRunning||!resumeInfo.available);
+  $('resumeBtn').textContent=resumeInfo.available?'Resume '+resumeInfo.remaining:'Resume';
+  if(resumeInfo.available&&!isRunning){
+    setText('readyPill','Resume '+resumeInfo.remaining);
+    setText('runState','Checkpoint');
+  }else if(!isRunning){
+    setText('runState','En attente');
+  }
+}
+
+function setSettingsLocked(locked){
+  ['setSpeedPreset','setRunMode','setBatchSize','setIndustrialFilePick','setIndustrialPath','setConcurrent','setRotation','setMinDelay','setMaxDelay','setAutoStart','setAutoRemove','setBrowserSessionMode','setAutoCacheCleaner','setCacheMaxMb','setTelegramTemplate','setTelegramLinks','setTelegramApi','setTelegramApiFile','telegramPhone','saveTelegramPhoneBtn','requestTelegramCodeBtn','submitTelegramCodeBtn','validateTelegramApiBtn','resetSessionBtn','cleanCacheBtn','saveSettingsBtn']
+    .forEach(id=>$(id).disabled=locked);
+  setText('settingsMsg',locked?'Parametres verrouilles pendant le traitement.':'Modifiable hors traitement.');
+  setText('sessionMsg',locked?'Session verrouillee pendant le traitement.':sessionSummary(currentConfig.browserSession));
+  setText('cacheMsg',locked?'Cache verrouille pendant le traitement.':cacheSummary(currentConfig.cacheState));
+}
+
+function flushProcessedRemove(){
+  const removeSet=removeBuffer;
+  removeBuffer=new Set();
+  removeTimer=null;
+  if(removeSet.size===0)return;
+  loadedNums=loadedNums.filter(n=>!removeSet.has(normalizeUi(n)));
+  const nextText=$('ta').value
+    .split(/\r?\n/)
+    .filter(line=>line.trim()&&!removeSet.has(normalizeUi(line)))
+    .join('\n');
+  if(nextText!==$('ta').value)$('ta').value=nextText;
+  if($('loaded').style.display==='block'){
+    $('loaded').textContent=loadedNums.length+' numeros restants dans le fichier importe';
+  }
+  updateReady();
+}
+
+function scheduleProcessedRemove(number){
+  if(currentConfig.autoRemoveProcessed===false)return;
+  const normalized=normalizeUi(number);
+  if(!normalized)return;
+  removeBuffer.add(normalized);
+  if(!removeTimer)removeTimer=setTimeout(flushProcessedRemove,250);
+}
+
+function updateQueueInfo(info){
+  queueInfo=info||queueInfo;
+  if(typeof queueInfo.removed==='number')setText('optRemoved',queueInfo.removed);
+  if(queueInfo.remaining!==null){
+    setText('optRemaining',queueInfo.remaining);
+    if(isRunning)setText('readyPill',queueInfo.remaining+' left');
+  }
+}
+
+function sessionSummary(session){
+  if(!session)return 'Session locale stable.';
+  const mb=(Number(session.totalBytes||0)/1024/1024).toFixed(1);
+  const mode=session.mode==='resetOnStart'?'Reset automatique avant run':'Stable autorisee';
+  return mode+' - '+(session.totalFiles||0)+' fichiers, '+mb+' MB.';
+}
+
+function cacheSummary(cache){
+  if(!cache)return 'Cache surveille.';
+  const mode=cache.enabled?'Auto cleaner actif':'Auto cleaner off';
+  return mode+' - '+(cache.totalMb||0)+' MB / limite '+(cache.maxMb||currentConfig.cacheMaxMb||250)+' MB.';
+}
+
+function formatBytes(bytes){
+  const n=Number(bytes)||0;
+  if(n>=1024*1024*1024)return (n/1024/1024/1024).toFixed(1)+' GB';
+  if(n>=1024*1024)return (n/1024/1024).toFixed(1)+' MB';
+  if(n>=1024)return (n/1024).toFixed(1)+' KB';
+  return n+' B';
+}
+
+function renderInputFiles(files,currentPath){
+  const pick=$('setIndustrialFilePick');
+  if(!pick)return;
+  const selected=currentPath||pick.value;
+  pick.innerHTML='<option value="">Choisir un fichier du dossier</option>';
+  (files||[]).forEach(file=>{
+    const opt=document.createElement('option');
+    opt.value=file.path;
+    opt.textContent=file.name+' - '+formatBytes(file.size);
+    pick.appendChild(opt);
+  });
+  pick.value=[...pick.options].some(opt=>opt.value===selected)?selected:'';
+}
+
+function estimateClient(cfg){
+  const avgDelay=((Number(cfg.minDelayMs)||0)+(Number(cfg.maxDelayMs)||0))/2;
+  const avgCycle=2500+avgDelay;
+  const rate=Math.max(1,Math.floor((Number(cfg.concurrentChecks)||1)*60000/avgCycle));
+  return {rate,batchMinutes:Math.max(1,Math.ceil((Number(cfg.batchSize)||1)/rate))};
+}
+
+function applyConfig(cfg){
+  currentConfig=cfg||currentConfig;
+  $('setSpeedPreset').value=currentConfig.speedPreset||'balanced';
+  $('setRunMode').value=currentConfig.runMode||'manual';
+  $('setBatchSize').value=currentConfig.batchSize||5000;
+  $('setIndustrialPath').value=currentConfig.industrialInputFile||'';
+  renderInputFiles(currentConfig.inputFiles,currentConfig.industrialInputFile);
+  $('setConcurrent').value=currentConfig.concurrentChecks||10;
+  $('setRotation').value=Math.round((currentConfig.rotationIntervalMs||60000)/1000);
+  $('setMinDelay').value=currentConfig.minDelayMs||0;
+  $('setMaxDelay').value=currentConfig.maxDelayMs||0;
+  $('setAutoStart').checked=currentConfig.autoStartIndustrial===true;
+  $('setAutoRemove').checked=currentConfig.autoRemoveProcessed!==false;
+  $('setBrowserSessionMode').value=currentConfig.browserSessionMode||'stable';
+  $('setAutoCacheCleaner').checked=currentConfig.autoCacheCleaner!==false;
+  $('setCacheMaxMb').value=currentConfig.cacheMaxMb||250;
+  $('setTelegramLinks').checked=currentConfig.telegramLinksEnabled!==false;
+  $('setTelegramTemplate').value=currentConfig.telegramLinkTemplate||'https://t.me/+{number}';
+  $('setTelegramApi').checked=currentConfig.telegramApiEnabled!==false;
+  $('setTelegramApiFile').value=currentConfig.telegramApiFile||'';
+  $('setLicenseKey').value=currentConfig.licenseKey||'';
+
+  const apiChecked = currentConfig.telegramApiEnabled!==false;
+  const linksChecked = currentConfig.telegramLinksEnabled!==false;
+  if(apiChecked && linksChecked){
+    $('topCheckMode').value = 'watg';
+  } else if(apiChecked){
+    $('topCheckMode').value = 'tg';
+  } else {
+    $('topCheckMode').value = 'wa';
+  }
+
+  
+  if(currentConfig.licenseState){
+    const state = currentConfig.licenseState;
+    const msgEl = $('licenseStateMsg');
+    if(state.valid){
+      msgEl.textContent = 'Active (Expires: ' + state.expires + ')';
+      msgEl.style.color = 'var(--green)';
+    }else{
+      msgEl.textContent = state.error || 'Invalid License Key.';
+      msgEl.style.color = 'var(--red)';
+    }
+  }
+
+  setText('optNetwork',currentConfig.network||'Tor rotation');
+  setText('optMode',currentConfig.mode||'Scraper signals');
+  setText('optFile',currentConfig.industrialInputAvailable?'Fichier trouve':'Fichier introuvable');
+  if(currentConfig.outputs)setText('optOutput',(currentConfig.outputs.whatsapp||'output_whatsapp.vcf')+' / '+(currentConfig.outputs.telegram||'output_telegram.vcf'));
+  setText('optTelegram',currentConfig.telegramLinksEnabled!==false?'WA-valid export':'Off');
+  renderTelegramApi(currentConfig.telegramApi);
+  renderSession(currentConfig.browserSession);
+  renderCache(currentConfig.cacheState);
+  renderSpeed();
+  updateReady();
+}
+
+function renderSession(session){
+  if(session)currentConfig.browserSession=session;
+  const state=currentConfig.browserSession;
+  const mode=(currentConfig.browserSessionMode||state?.mode)==='resetOnStart'?'Auto reset':'Stable';
+  setText('optSession',mode);
+  setText('optSessionFiles',state?String(state.totalFiles||0):'0');
+  setText('sessionMsg',sessionSummary(state));
+}
+
+function renderCache(cache){
+  if(cache)currentConfig.cacheState=cache;
+  const state=currentConfig.cacheState;
+  setText('optCache',state?(state.totalMb||0)+' MB':'0 MB');
+  setText('cacheMsg',cacheSummary(state));
+}
+
+function renderTelegramApi(api){
+  const apiEl=$('optTelegramApi');
+  const gate=$('tgApiGate');
+  const setStep=(id,textId,state,text)=>{
+    const el=$(id);
+    if(el)el.className='gate-step '+state;
+    setText(textId,text);
+  };
+  if(!api){
+    setText('optTelegramApi','Not checked');
+    setText('tgApiGateText','Not checked');
+    setText('telegramApiMsg','API non verifiee.');
+    setStep('tgPhoneStep','tgPhoneStepText','warn','Missing');
+    setStep('tgCodeStep','tgCodeStepText','locked','Not sent');
+    setStep('tgSessionStep','tgSessionStepText','locked','Missing');
+    setStep('tgLiveStep','tgLiveStepText','locked','Not checked');
+    if(apiEl)apiEl.className='warn';
+    if(gate)gate.className='gate-step warn';
+    return;
+  }
+  setStep('tgPhoneStep','tgPhoneStepText',api.checks?.phone||api.checks?.botToken?'ok':'warn',api.maskedPhone||api.checks?.botToken?'Saved':'Missing');
+  setStep('tgCodeStep','tgCodeStepText',api.checks?.session||api.checks?.botToken?'ok':'info',api.checks?.session||api.checks?.botToken?'Done':'Send Code');
+  setStep('tgSessionStep','tgSessionStepText',api.checks?.session||api.checks?.botToken?'ok':'locked',api.checks?.session||api.checks?.botToken?'Saved':'Missing');
+  if(api.ready){
+    const liveText=api.validation==='authorized_session'?'Live authorized':'Ready after WA valid';
+    setText('optTelegramApi',liveText);
+    setText('tgApiGateText',api.live?'Live OK':'Ready');
+    setStep('tgLiveStep','tgLiveStepText',api.live?'ok':'warn',api.live?'Live OK':'Ready');
+    const self=api.self?.username?(' @'+api.self.username):(api.maskedPhone?' '+api.maskedPhone:'');
+    setText('telegramApiMsg','API active: '+(api.mode||'user')+self+'.');
+    if(apiEl)apiEl.className='ok';
+    if(gate)gate.className='gate-step ok';
+  }else if(api.exists){
+    const unauthorized=api.validation==='unauthorized_session';
+    setText('optTelegramApi',unauthorized?'Session unauthorized':'File incomplete');
+    setText('tgApiGateText',unauthorized?'Unauthorized':'Incomplete');
+    setStep('tgLiveStep','tgLiveStepText',unauthorized?'locked':'warn',unauthorized?'Rejected':'Validate');
+    const missing=[];
+    if(!api.checks?.apiId)missing.push('api_id');
+    if(!api.checks?.apiHash)missing.push('api_hash');
+    if(!api.checks?.phone&&!api.checks?.botToken)missing.push('phone/token');
+    if(api.checks?.phone&&!api.checks?.session&&!api.checks?.botToken)missing.push('session');
+    setText('telegramApiMsg',unauthorized?'Session exists but Telegram rejected it. Login again.':'Missing: '+missing.join(', ')+'.');
+    if(apiEl)apiEl.className='warn';
+    if(gate)gate.className='gate-step warn';
+  }else{
+    setText('optTelegramApi','File missing');
+    setText('tgApiGateText','Missing');
+    setText('telegramApiMsg','API file introuvable.');
+    setStep('tgLiveStep','tgLiveStepText','locked','No file');
+    if(apiEl)apiEl.className='error';
+    if(gate)gate.className='gate-step locked';
+  }
+}
+
+function readConfigForm(){
+  return {
+    runMode:$('setRunMode').value,
+    speedPreset:$('setSpeedPreset').value,
+    industrialInputFile:$('setIndustrialPath').value,
+    batchSize:Number($('setBatchSize').value),
+    concurrentChecks:Number($('setConcurrent').value),
+    rotationIntervalMs:Number($('setRotation').value)*1000,
+    minDelayMs:Number($('setMinDelay').value),
+    maxDelayMs:Number($('setMaxDelay').value),
+    autoStartIndustrial:$('setAutoStart').checked,
+    autoRemoveProcessed:$('setAutoRemove').checked,
+    browserSessionMode:$('setBrowserSessionMode').value,
+    autoCacheCleaner:$('setAutoCacheCleaner').checked,
+    cacheMaxMb:Number($('setCacheMaxMb').value),
+    telegramLinksEnabled:$('setTelegramLinks').checked,
+    telegramLinkTemplate:$('setTelegramTemplate').value,
+    telegramApiEnabled:$('setTelegramApi').checked,
+    telegramApiFile:$('setTelegramApiFile').value,
+    licenseKey:$('setLicenseKey').value
+  };
+}
+
+function draftConfigFromForm(){
+  return {
+    ...currentConfig,
+    speedPreset:$('setSpeedPreset').value,
+    batchSize:Number($('setBatchSize').value),
+    concurrentChecks:Number($('setConcurrent').value),
+    rotationIntervalMs:Number($('setRotation').value)*1000,
+    minDelayMs:Number($('setMinDelay').value),
+    maxDelayMs:Number($('setMaxDelay').value)
+  };
+}
+
+function applyPresetToForm(presetKey){
+  const preset=currentConfig.speedOptions&&currentConfig.speedOptions[presetKey];
+  if(!preset)return;
+  $('setConcurrent').value=preset.concurrentChecks;
+  $('setMinDelay').value=preset.minDelayMs;
+  $('setMaxDelay').value=preset.maxDelayMs;
+  $('setRotation').value=Math.round(preset.rotationIntervalMs/1000);
+  renderSpeed();
+}
+
+function renderSpeed(){
+  const draft=draftConfigFromForm();
+  const est=currentConfig.speedEstimate&&draft.speedPreset===currentConfig.speedPreset?currentConfig.speedEstimate:estimateClient(draft);
+  const max=currentConfig.maxStableResultsPerMinute||'-';
+  const preset=currentConfig.speedOptions&&currentConfig.speedOptions[draft.speedPreset];
+  const rateText=(est.resultsPerMinute?est.resultsPerMinute:est.rate)+' / min';
+  const batchText=(est.batchMinutes||1)+' min';
+  setText('speedRate',rateText);
+  setText('speedRateRack',rateText);
+  setText('speedBatch',batchText);
+  setText('speedBatchRack',batchText);
+  setText('speedMax',max+' / min');
+  setText('speedMaxRack',max);
+  setText('speedNote',preset?preset.label+' - '+preset.reliability+'. '+preset.note:'Personnalise plafonne: limites protegees appliquees.');
+
+  // Sync top readouts
+  setText('topDelayReadout', 'Delay: ' + draft.minDelayMs + '-' + draft.maxDelayMs + 'ms');
+  setText('topThreadsReadout', draft.concurrentChecks + ' threads');
+
+  // Update faders
+  updateFaderHeights({
+    speedRate: rateText
+  });
+}
+
+socket.on('status',({type,message})=>{
+  setStatus(type,message);
+  const normalized=String(message).toLowerCase();
+  if(!normalized.includes('rotation ip vpn')&&!normalized.includes('ip vpn remplacee')){
+    pushCenterLog(type==='error'?'error':type==='warning'?'warn':type==='success'?'ok':'info',type,message);
+  }
+  const d=document.createElement('div');
+  d.className='entry '+(type==='error'?'invalid':type==='warning'?'retry':'valid');
+  d.innerHTML='<span class="tag">'+type+'</span><span class="number">'+message+'</span>';
+  $('log').appendChild(d);
+  while($('log').children.length>400)$('log').removeChild($('log').firstChild);
+  if(isSmartScrollEnabled){
+    $('log').scrollTop=$('log').scrollHeight;
+  }
+});
+socket.on('config',applyConfig);
+socket.on('stats',s=>{
+  const checked=s.checked||0;
+  const total=s.total||0;
+  const remaining=Math.max(0,total-checked);
+  const p=total?(checked/total*100).toFixed(1):0;
+  setText('sT',total);
+  setText('sC',checked);
+  setText('sV',s.valid||0);
+  setText('sTG',s.telegramValid||0);
+  setText('sI',s.invalid||0);
+  setText('optRemoved',checked);
+  setText('optRemaining',remaining);
+  $('pbar').style.width=p+'%';
+  $('miniPbar').style.width=p+'%';
+  setText('ptxt',checked+' / '+total+' ('+p+'%)');
+
+  // Update top progress readout
+  setText('topProgressReadout', 'Progress: ' + p + '%');
+
+  // Update faders
+  updateFaderHeights({
+    checked: checked,
+    total: total,
+    speedRate: $('speedRate').textContent
+  });
+});
+socket.on('queue',updateQueueInfo);
+socket.on('result',({number,status,info})=>{
+  if(status==='valid'||status==='invalid')scheduleProcessedRemove(number);
+  if(status==='retry'){
+    const msg='+'+number+' '+(info||'Retry');
+    if(info&&String(info).includes('(4/4)'))pushCenterLog('warn','defer',msg+' - saved for resume if needed');
+    else pushQuietRetry(msg);
+  }
+  const d=document.createElement('div');
+  const baseStatus = status;
+  d.className='entry '+baseStatus;
+  const label=status==='valid'?'WA Only':status==='invalid'?'No WA':'Retry';
+  d.innerHTML='<span class="tag">'+label+'</span><span class="number">+'+number+'</span><span class="info">'+(info||'')+'</span>';
+  $('log').appendChild(d);
+  while($('log').children.length>400)$('log').removeChild($('log').firstChild);
+  if(isSmartScrollEnabled){
+    $('log').scrollTop=$('log').scrollHeight;
+  }
+});
+socket.on('checking',setRunning);
+socket.on('resume',setResumeInfo);
+socket.on('browserSession',renderSession);
+socket.on('cacheState',renderCache);
+
+$('fileIn').addEventListener('change',e=>{
+  const f=e.target.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    loadedNums=unique(parse(ev.target.result));
+    $('loaded').textContent=loadedNums.length+' numeros charges depuis '+f.name;
+    $('loaded').style.display='block';
+    updateReady();
+  };
+  r.readAsText(f);
+});
+$('drop').addEventListener('dragover',e=>{e.preventDefault();$('drop').classList.add('over')});
+$('drop').addEventListener('dragleave',()=>$('drop').classList.remove('over'));
+$('drop').addEventListener('drop',e=>{
+  e.preventDefault();
+  $('drop').classList.remove('over');
+  $('fileIn').files=e.dataTransfer.files;
+  $('fileIn').dispatchEvent(new Event('change'));
+});
+$('ta').addEventListener('input',updateReady);
+$('setSpeedPreset').addEventListener('change',()=>{
+  const key=$('setSpeedPreset').value;
+  if(key!=='custom')applyPresetToForm(key);
+  renderSpeed();
+});
+['setBatchSize','setConcurrent','setRotation','setMinDelay','setMaxDelay'].forEach(id=>{
+  $(id).addEventListener('input',()=>{
+    if(id!=='setBatchSize')$('setSpeedPreset').value='custom';
+    renderSpeed();
+  });
+});
+$('setRunMode').addEventListener('change',()=>{
+  currentConfig={...currentConfig,runMode:$('setRunMode').value};
+  updateReady();
+});
+$('setIndustrialFilePick').addEventListener('change',()=>{
+  if($('setIndustrialFilePick').value){
+    $('setIndustrialPath').value=$('setIndustrialFilePick').value;
+    currentConfig={...currentConfig,industrialInputFile:$('setIndustrialPath').value};
+    setText('settingsMsg','Fichier selectionne. Cliquez Save settings.');
+    updateReady();
+  }
+});
+$('setIndustrialPath').addEventListener('input',()=>{
+  currentConfig={...currentConfig,industrialInputFile:$('setIndustrialPath').value};
+  renderInputFiles(currentConfig.inputFiles,currentConfig.industrialInputFile);
+  setText('settingsMsg','Chemin modifie. Cliquez Save settings.');
+  updateReady();
+});
+$('setBrowserSessionMode').addEventListener('change',()=>{
+  currentConfig={...currentConfig,browserSessionMode:$('setBrowserSessionMode').value};
+  renderSession(currentConfig.browserSession);
+});
+$('setAutoCacheCleaner').addEventListener('change',()=>{
+  currentConfig={...currentConfig,autoCacheCleaner:$('setAutoCacheCleaner').checked};
+  renderCache(currentConfig.cacheState);
+});
+$('setCacheMaxMb').addEventListener('input',()=>{
+  currentConfig={...currentConfig,cacheMaxMb:Number($('setCacheMaxMb').value)};
+  renderCache(currentConfig.cacheState);
+});
+$('setTelegramLinks').addEventListener('change',()=>{
+  currentConfig={...currentConfig,telegramLinksEnabled:$('setTelegramLinks').checked};
+  setText('optTelegram',currentConfig.telegramLinksEnabled?'WA-valid export':'Off');
+});
+$('setTelegramTemplate').addEventListener('input',()=>{
+  const template=$('setTelegramTemplate').value.trim();
+  currentConfig={...currentConfig,telegramLinkTemplate:template};
+});
+$('setTelegramApi').addEventListener('change',()=>{
+  currentConfig={...currentConfig,telegramApiEnabled:$('setTelegramApi').checked};
+  renderTelegramApi(currentConfig.telegramApi);
+});
+$('setTelegramApiFile').addEventListener('input',()=>{
+  currentConfig={...currentConfig,telegramApiFile:$('setTelegramApiFile').value};
+  setText('telegramApiMsg','Validate API pour activer.');
+});
+$('setLicenseKey').addEventListener('input',()=>{
+  currentConfig={...currentConfig,licenseKey:$('setLicenseKey').value};
+});
+$('saveTelegramPhoneBtn').addEventListener('click',()=>{
+  const phone=$('telegramPhone').value.trim();
+  setText('telegramApiMsg','Saving phone...');
+  fetch('/api/telegram/phone',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({phone})
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Phone save failed');
+      return data;
+    })
+    .then(data=>{
+      $('telegramPhone').value='';
+      if(data.telegramApi){
+        currentConfig={...currentConfig,telegramApi:data.telegramApi};
+        renderTelegramApi(data.telegramApi);
+      }
+      setText('telegramApiMsg','Phone saved '+(data.maskedPhone||'')+'. Click Send Code.');
+      pushCenterLog('ok','tg phone','Telegram phone saved. Send Code next.');
+      setStatus('success','Telegram phone saved.');
+    })
+    .catch(err=>{
+      setText('telegramApiMsg',err.message);
+      setStatus('error',err.message);
+      pushCenterLog('error','tg phone',err.message);
+    });
+});
+$('validateTelegramApiBtn').addEventListener('click',()=>{
+  setText('telegramApiMsg','Validation API...');
+  fetch('/api/telegram/validate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      telegramApiEnabled:$('setTelegramApi').checked,
+      telegramApiFile:$('setTelegramApiFile').value
+    })
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Telegram API validation failed');
+      return data;
+    })
+    .then(api=>{
+      currentConfig={...currentConfig,telegramApi:api,telegramApiEnabled:$('setTelegramApi').checked,telegramApiFile:$('setTelegramApiFile').value};
+      renderTelegramApi(api);
+      pushCenterLog(api.ready?'ok':'warn','tg api',api.ready?'Telegram API validator active after WA valid.':'Telegram API file is not ready.');
+      setStatus(api.ready?'success':'warning',api.ready?'Telegram API active for valid-number gate.':'Telegram API file incomplete.');
+    })
+    .catch(err=>{
+      setText('telegramApiMsg',err.message);
+      setStatus('error',err.message);
+      pushCenterLog('error','tg api',err.message);
+    });
+});
+$('requestTelegramCodeBtn').addEventListener('click',()=>{
+  setText('telegramApiMsg','Sending Telegram code...');
+  fetch('/api/telegram/login/request-code',{method:'POST'})
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Telegram code request failed');
+      return data;
+    })
+    .then(data=>{
+      setText('telegramApiMsg',data.message||'Code sent.');
+      if(data.ready){
+        fetch('/api/config').then(r=>r.json()).then(applyConfig).catch(()=>{});
+        pushCenterLog('ok','tg login','Telegram session saved.');
+        setStatus('success','Telegram session saved.');
+      }else{
+        pushCenterLog('info','tg login','Enter Telegram code in the GUI, then Save Telegram Session.');
+        setStatus('info','Telegram code sent.');
+        $('telegramCode').focus();
+      }
+    })
+    .catch(err=>{
+      setText('telegramApiMsg',err.message);
+      setStatus('error',err.message);
+      pushCenterLog('error','tg login',err.message);
+    });
+});
+$('submitTelegramCodeBtn').addEventListener('click',()=>{
+  setText('telegramApiMsg','Saving Telegram session...');
+  fetch('/api/telegram/login/submit-code',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      code:$('telegramCode').value,
+      password:$('telegramPassword').value
+    })
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok){
+        const err=new Error(data?.error||'Telegram session save failed');
+        err.needsPassword=data?.needsPassword===true;
+        throw err;
+      }
+      return data;
+    })
+    .then(data=>{
+      setText('telegramApiMsg',data.message||'Telegram session saved.');
+      $('telegramCode').value='';
+      $('telegramPassword').value='';
+      pushCenterLog('ok','tg login','Telegram session saved. Validate API now.');
+      setStatus('success','Telegram session saved.');
+      fetch('/api/config').then(r=>r.json()).then(applyConfig).catch(()=>{});
+    })
+    .catch(err=>{
+      setText('telegramApiMsg',err.needsPassword?'2FA password required. Enter it and click Save Telegram Session.':err.message);
+      setStatus(err.needsPassword?'warning':'error',err.needsPassword?'Telegram 2FA password required.':err.message);
+      pushCenterLog(err.needsPassword?'warn':'error','tg login',err.needsPassword?'2FA password required.':err.message);
+      if(err.needsPassword)$('telegramPassword').focus();
+    });
+});
+$('cleanCacheBtn').addEventListener('click',()=>{
+  if(isRunning)return;
+  setText('cacheMsg','Nettoyage cache...');
+  fetch('/api/cache/clean',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({reason:'gui'})
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Cache clean failed');
+      return data;
+    })
+    .then(data=>{
+      renderCache(data.after);
+      const msg='Cache cleaned. Freed '+data.freedMb+' MB.';
+      pushCenterLog(data.errors&&data.errors.length?'warn':'ok','cache',msg);
+      setStatus(data.errors&&data.errors.length?'warning':'success',msg);
+    })
+    .catch(err=>{
+      setText('cacheMsg',err.message);
+      setStatus('error',err.message);
+      pushCenterLog('error','cache',err.message);
+    });
+});
+$('resetSessionBtn').addEventListener('click',()=>{
+  if(isRunning)return;
+  setText('sessionMsg','Reset session...');
+  fetch('/api/session/reset',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({reason:'gui'})
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Session reset failed');
+      return data;
+    })
+    .then(data=>{
+      renderSession(data.state);
+      pushCenterLog('ok','session','Local browser/auth session reset. Backup kept.');
+      setStatus('success','Session navigateur locale reinitialisee.');
+    })
+    .catch(err=>{
+      setText('sessionMsg',err.message);
+      setStatus('error',err.message);
+      pushCenterLog('error','session',err.message);
+    });
+});
+$('saveSettingsBtn').addEventListener('click',()=>{
+  setText('settingsMsg','Sauvegarde...');
+  fetch('/api/config',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(readConfigForm())
+  })
+    .then(async r=>{
+      const data=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error(data?.error||'Save failed');
+      return data;
+    })
+    .then(cfg=>{
+      applyConfig(cfg);
+      setText('settingsMsg','Parametres sauvegardes.');
+      setStatus('success','Parametres sauvegardes. Application au prochain lancement.');
+    })
+    .catch(err=>{
+      setText('settingsMsg',err.message);
+      setStatus('error',err.message);
+    });
+});
+$('goBtn').addEventListener('click',()=>{
+  const all=readyNumbers();
+  if(currentConfig.runMode!=='industrial'&&!all.length)return;
+  queueInfo={remaining:all.length,removed:0};
+  errorCount=0;
+  retryCount=0;
+  quietRetryCount=0;
+  if(quietRetryTimer){clearTimeout(quietRetryTimer);quietRetryTimer=null;}
+  $('arrLogList').innerHTML='';
+  pushCenterLog('ok','start','Run started. Monitoring errors here.');
+  setText('optRemoved','0');
+  $('log').innerHTML='';
+  socket.emit('start',{mode:currentConfig.runMode,numbers:all});
+});
+$('stopBtn').addEventListener('click',()=>socket.emit('stop'));
+$('resumeBtn').addEventListener('click',()=>socket.emit('resume'));
+$('rotateIpBtn').addEventListener('click', () => {
+  setText('vpnText', 'Rotation en cours...');
+  fetch('/api/vpn/rotate', { method: 'POST' })
+    .then(async r => {
+      const data = await r.json().catch(() => null);
+      if (!r.ok) throw new Error(data?.error || 'Rotation failed');
+      return data;
+    })
+    .then(data => {
+      pushCenterLog('ok', 'rotation', 'IP rotation manually triggered.');
+    })
+    .catch(err => {
+      pushCenterLog('error', 'rotation', err.message);
+    });
+});
+
+$('topSaveSettingsBtn').addEventListener('click', () => {
+  $('saveSettingsBtn').click();
+});
+
+$('toggleLogsBtn').addEventListener('click', () => {
+  const el = $('arrLog');
+  if (el) {
+    el.classList.toggle('hidden');
+  }
+});
+
+$('topCheckMode').addEventListener('change', () => {
+  const mode = $('topCheckMode').value;
+  if (mode === 'wa') {
+    $('setTelegramApi').checked = false;
+  } else if (mode === 'watg') {
+    $('setTelegramApi').checked = true;
+    $('setTelegramLinks').checked = true;
+  } else if (mode === 'tg') {
+    $('setTelegramApi').checked = true;
+    $('setTelegramLinks').checked = true;
+  }
+  $('saveSettingsBtn').click();
+});
+
+$('smartScrollToggleBtn').addEventListener('click', () => {
+  isSmartScrollEnabled = !isSmartScrollEnabled;
+  const btn = $('smartScrollToggleBtn');
+  if (isSmartScrollEnabled) {
+    btn.textContent = 'Scroll: ON';
+    btn.style.background = '#4fe8d6';
+    btn.style.color = '#111';
+    $('log').scrollTop = $('log').scrollHeight;
+  } else {
+    btn.textContent = 'Scroll: OFF';
+    btn.style.background = '#ff8f8f';
+    btn.style.color = '#111';
+  }
+});
+
+fetch('/api/config')
+  .then(r=>r.ok?r.json():null)
+  .then(cfg=>{if(cfg)applyConfig(cfg)})
+  .catch(()=>{});
+updateReady();
+</script>
+</body>
+</html>

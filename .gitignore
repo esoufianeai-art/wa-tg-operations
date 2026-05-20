@@ -1,0 +1,87 @@
+# ============================================
+# WA + TG Operations - .gitignore
+# ============================================
+
+# === Dependencies ===
+node_modules/
+
+# === Build Artifacts ===
+build/
+dist/
+sea-config.json
+
+# === Sensitive / User Data ===
+MY TELEGRAM API.txt
+telegram_session.txt
+settings.json
+industrial_cursor.json
+*.licensekeys
+
+# === Session & Auth Data ===
+auth_session/
+auth_session_cli/
+browser_session/
+data/session_backups/
+
+# === Output Files ===
+output/
+output_whatsapp.vcf
+output_telegram.vcf
+no_whatsapp.txt
+resume_state.json
+
+# === Number Lists (user data - NEVER commit) ===
+*.txt
+!requirements.txt
+!MY TELEGRAM API.example.txt
+
+# === Tor Binary (large, platform-specific) ===
+tor/
+tor.tar.gz
+torrc
+
+# === Logs ===
+*.log
+server.out.log
+server.err.log
+
+# === Test / Debug Files ===
+test_*.html
+test_*.js
+test_*.txt
+html_*.html
+page_*.html
+*_clean.html
+*_struct.html
+*_text.txt
+snippet.js
+compare.js
+deep_compare.js
+body_diff.js
+text_diff.js
+word_diff.js
+head_extractor.js
+url_extractor.js
+wame_format.js
+write_clean.js
+pattern_test.js
+multi_test.js
+baileys_test.js
+
+# === OS Files ===
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === Preview images (dev only) ===
+ui-*.png
+
+# === Python cache ===
+__pycache__/
+*.pyc

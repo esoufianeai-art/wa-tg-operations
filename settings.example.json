@@ -1,0 +1,20 @@
+{
+  "runMode": "manual",
+  "speedPreset": "balanced",
+  "industrialInputFile": "",
+  "batchSize": 5000,
+  "concurrentChecks": 10,
+  "minDelayMs": 500,
+  "maxDelayMs": 1500,
+  "rotationIntervalMs": 30000,
+  "autoStartIndustrial": false,
+  "autoRemoveProcessed": true,
+  "browserSessionMode": "stable",
+  "autoCacheCleaner": true,
+  "cacheMaxMb": 250,
+  "telegramLinksEnabled": true,
+  "telegramLinkTemplate": "https://t.me/+{number}",
+  "telegramApiEnabled": false,
+  "telegramApiFile": "MY TELEGRAM API.txt",
+  "licenseKey": ""
+}

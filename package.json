@@ -1,0 +1,45 @@
+{
+  "name": "wa-tg-operations",
+  "version": "3.0.0",
+  "description": "Industrial-grade WhatsApp & Telegram number verification engine with real-time dashboard",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "build": "node build.js",
+    "telegram:login": "node telegram_login.js",
+    "license:generate": "node generate_license.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "keywords": [
+    "whatsapp",
+    "telegram",
+    "number-verification",
+    "bulk-checker",
+    "vcf-export"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "express": "^4.21.0",
+    "pino": "^9.5.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.0",
+    "socks-proxy-agent": "^10.0.0",
+    "telegram": "^2.26.22"
+  },
+  "devDependencies": {
+    "bytenode": "^1.5.7",
+    "esbuild": "^0.28.0",
+    "javascript-obfuscator": "^5.4.2"
+  }
+}

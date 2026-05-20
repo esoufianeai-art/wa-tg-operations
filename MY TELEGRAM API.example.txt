@@ -1,0 +1,5 @@
+App api_id:
+YOUR_API_ID_HERE
+App api_hash:
+YOUR_API_HASH_HERE
+phone=+YOURNUMBERHERE
