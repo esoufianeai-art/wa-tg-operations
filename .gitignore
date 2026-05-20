@@ -1,6 +1,20 @@
 # ============================================
 # WA + TG Operations - .gitignore
+# B2C Distribution Repo — Source code excluded
 # ============================================
+
+# === ALL SOURCE CODE (admin only) ===
+server.js
+build.js
+generate_license.js
+telegram_checker.js
+telegram_login.js
+public/
+data/
+START.bat
+WhatsApp_GUI_Checker.bat
+package-lock.json
+package.json
 
 # === Dependencies ===
 node_modules/
@@ -21,7 +35,6 @@ industrial_cursor.json
 auth_session/
 auth_session_cli/
 browser_session/
-data/session_backups/
 
 # === Output Files ===
 output/
@@ -30,25 +43,21 @@ output_telegram.vcf
 no_whatsapp.txt
 resume_state.json
 
-# === Number Lists (user data - NEVER commit) ===
+# === Number Lists ===
 *.txt
-!requirements.txt
 !MY TELEGRAM API.example.txt
 
-# === Tor Binary (large, platform-specific) ===
+# === Tor ===
 tor/
 tor.tar.gz
 torrc
 
 # === Logs ===
 *.log
-server.out.log
-server.err.log
 
-# === Test / Debug Files ===
+# === Test / Debug ===
 test_*.html
 test_*.js
-test_*.txt
 html_*.html
 page_*.html
 *_clean.html
@@ -68,20 +77,19 @@ pattern_test.js
 multi_test.js
 baileys_test.js
 
-# === OS Files ===
+# === OS ===
 Thumbs.db
 .DS_Store
 Desktop.ini
 
-# === IDE / Editor ===
+# === IDE ===
 .vscode/
 .idea/
 *.swp
-*.swo
 
-# === Preview images (dev only) ===
+# === Preview images ===
 ui-*.png
 
-# === Python cache ===
+# === Python ===
 __pycache__/
 *.pyc
