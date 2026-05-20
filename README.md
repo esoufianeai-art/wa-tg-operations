@@ -69,7 +69,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/wa-tg-operations.git
+git clone https://github.com/esoufianeai-art/wa-tg-operations.git
 cd wa-tg-operations
 
 # Install dependencies
